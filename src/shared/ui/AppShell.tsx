@@ -1,14 +1,21 @@
 import React, { useState, useRef } from 'react';
-import Map, { Source, Layer, NavigationControl, MapRef } from 'react-map-gl/maplibre';
+// We changed these imports to be more specific to stop the Vercel error
+import { Map, Source, Layer, NavigationControl, MapRef } from 'react-map-gl';
+import maplibregl from 'maplibre-gl'; 
 import { parseGPX } from '@/utils/gpxParser';
-import Sidebar from '@/shared/ui/Sidebar'; // Keeps your existing Sidebar
 import 'maplibre-gl/dist/maplibre-gl.css';
+
+// Designer styles for Kudos Posters
+const MAP_STYLES = {
+  light: "https://tiles.openfreemap.org/styles/liberty",
+  dark: "https://tiles.openfreemap.org/styles/dark-matter"
+};
 
 export default function AppShell() {
   const mapRef = useRef<MapRef>(null);
   const [routeCoords, setRouteCoords] = useState<[number, number][]>([]);
+  const [activeStyle, setStyle] = useState<keyof typeof MAP_STYLES>('light');
 
-  // This function handles the file and moves the map
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -16,112 +23,86 @@ export default function AppShell() {
         const coords = await parseGPX(file);
         setRouteCoords(coords);
 
-        // Calculate the "Center" of the run so the map can fly there
         if (coords.length > 0 && mapRef.current) {
           const lons = coords.map(c => c[0]);
           const lats = coords.map(c => c[1]);
-          const minLon = Math.min(...lons);
-          const maxLon = Math.max(...lons);
-          const minLat = Math.min(...lats);
-          const maxLat = Math.max(...lats);
-
           mapRef.current.fitBounds(
-            [minLon, minLat, maxLon, maxLat],
-            { padding: 100, duration: 2000 }
+            [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)],
+            { padding: 80, duration: 2000 }
           );
         }
       } catch (err) {
-        alert("Error reading GPX. Ensure it's a valid export.");
+        alert("Error parsing GPX data.");
       }
     }
   };
 
   return (
-    <div style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden' }}>
-      {/* 1. THE SIDEBAR (Your Design Control Center) */}
-      <div style={{ width: '350px', height: '100%', borderRight: '1px solid #ddd', zIndex: 10 }}>
-        <div style={{ padding: '20px' }}>
-          <h2 style={{ marginBottom: '10px' }}>Kudos Studio</h2>
-          <p style={{ fontSize: '13px', color: '#666', marginBottom: '20px' }}>
-            Transforming GPS data into minimalist art.
-          </p>
-          
+    <div style={{ display: 'flex', width: '100vw', height: '100vh', background: '#f5f5f5' }}>
+      
+      {/* SIDEBAR: Design Controls */}
+      <div style={{ width: '350px', padding: '30px', background: 'white', boxShadow: '2px 0 10px rgba(0,0,0,0.05)', zIndex: 10 }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 800, letterSpacing: '-1px', marginBottom: '5px' }}>KUDOS STUDIO</h1>
+        <p style={{ color: '#888', fontSize: '12px', marginBottom: '30px' }}>ASSET FACTORY v1.0</p>
+
+        <div style={{ marginBottom: '40px' }}>
+          <p style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '10px' }}>1. DATA INGESTION</p>
           <label style={{
-            display: 'block',
-            padding: '12px',
-            background: '#C9A84C', // Kudos Gold
-            color: 'white',
-            textAlign: 'center',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: 'bold'
+            display: 'block', padding: '15px', background: activeStyle === 'dark' ? '#1a1a1a' : '#C9A84C',
+            color: 'white', textAlign: 'center', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'
           }}>
-            UPLOAD RUN DATA (.GPX)
+            {routeCoords.length > 0 ? "CHANGE RUN DATA" : "UPLOAD GPX"}
             <input type="file" accept=".gpx" onChange={handleFileUpload} style={{ display: 'none' }} />
           </label>
         </div>
-        {/* Placeholder for your original sidebar components */}
-        <Sidebar /> 
+
+        {routeCoords.length > 0 && (
+          <div>
+            <p style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '10px' }}>2. POSTER STYLE</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <button 
+                onClick={() => setStyle('light')}
+                style={{ padding: '10px', borderRadius: '6px', border: activeStyle === 'light' ? '2px solid #C9A84C' : '1fr solid #ddd', background: 'white', cursor: 'pointer' }}>
+                Minimal White
+              </button>
+              <button 
+                onClick={() => setStyle('dark')}
+                style={{ padding: '10px', borderRadius: '6px', border: activeStyle === 'dark' ? '2px solid #C9A84C' : '1fr solid #ddd', background: '#1a1a1a', color: 'white', cursor: 'pointer' }}>
+                Dark Luxe
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* 2. THE MAP (Your Art Canvas) */}
-      <div style={{ flex: 1, position: 'relative' }}>
-        <Map
-          ref={mapRef}
-          initialViewState={{
-            longitude: 31.02, // Durban / KZN Default
-            latitude: -29.85,
-            zoom: 11
-          }}
-          mapStyle="https://tiles.openfreemap.org/styles/liberty"
-          style={{ width: '100%', height: '100%' }}
-        >
-          <NavigationControl position="top-right" />
-
-          {/* THE MAGIC: Drawing the Runner's Path */}
-          {routeCoords.length > 0 && (
-            <Source id="my-route" type="geojson" data={{
-              type: 'Feature',
-              properties: {},
-              geometry: {
-                type: 'LineString',
-                coordinates: routeCoords
-              }
-            }}>
-              <Layer
-                id="route-line-main"
-                type="line"
-                layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-                paint={{
-                  'line-color': '#C9A84C', // Official Kudos Gold
-                  'line-width': 5,
-                  'line-opacity': 0.9
-                }}
-              />
-            </Source>
-          )}
-        </Map>
-
-        {/* PRINT BUTTON */}
-        {routeCoords.length > 0 && (
-          <button 
-            onClick={() => window.print()}
-            style={{
-              position: 'absolute',
-              bottom: '30px',
-              right: '30px',
-              padding: '15px 30px',
-              background: 'white',
-              border: '2px solid #1a1a1a',
-              borderRadius: '50px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-            }}
+      {/* MAIN CANVAS: The Map */}
+      <div style={{ flex: 1, position: 'relative', padding: '40px' }}>
+        <div style={{ width: '100%', height: '100%', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}>
+          <Map
+            ref={mapRef}
+            mapLib={maplibregl} // THIS IS THE FIX: Explicitly telling the map to use MapLibre
+            mapStyle={MAP_STYLES[activeStyle]}
+            style={{ width: '100%', height: '100%' }}
           >
-            PREPARE PRINT ASSET
-          </button>
-        )}
+            <NavigationControl position="top-right" />
+            {routeCoords.length > 0 && (
+              <Source id="route" type="geojson" data={{
+                type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: routeCoords }
+              }}>
+                <Layer
+                  id="route-line"
+                  type="line"
+                  layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+                  paint={{
+                    'line-color': activeStyle === 'dark' ? '#C9A84C' : '#1a1a1a',
+                    'line-width': 4,
+                    'line-opacity': 1
+                  }}
+                />
+              </Source>
+            )}
+          </Map>
+        </div>
       </div>
     </div>
   );
