@@ -27,7 +27,7 @@ const TEMPLATE_STYLES = {
   topo: {
     id: 'topo',
     name: 'Topo Contour',
-    mapStyle: 'https://tiles.openfreemap.org/styles/liberty', // Fallback open style
+    mapStyle: 'https://tiles.openfreemap.org/styles/liberty',
     bg: '#F0EBE1',
     lineColor: '#2B4A8B',
     textColor: '#2B4A8B',
@@ -77,7 +77,7 @@ export default function AppShell() {
   const [bibNumber, setBibNumber] = useState<string>('8421');
   const [customQuote, setCustomQuote] = useState<string>('Local is Lekker.');
 
-  // Automatically recalculate map view borders when knobs update
+  // Recalculate view map window when boundaries/knobs adjust
   useEffect(() => {
     if (routeCoords.length > 0 && mapRef.current) {
       const lons = routeCoords.map(c => c[0]);
@@ -104,10 +104,17 @@ export default function AppShell() {
   const currentToken = TEMPLATE_STYLES[activeTemplate];
 
   return (
-    <div style={{ display: 'flex', width: '100vw', height: '100vw', maxHeight: '100vh', overflow: 'hidden', fontFamily: 'system-ui, sans-serif', background: '#F0F2F5' }}>
+    <div style={{ 
+      display: 'flex', 
+      width: '100vw', 
+      height: '100vh', 
+      overflow: 'hidden', 
+      fontFamily: 'system-ui, sans-serif', 
+      background: '#F0F2F5' 
+    }}>
       
       {/* =========================================================
-          THE FULL Side Control Panel (Foundational Features Restored)
+          THE CONTROL SIDEBAR PANEL
           ========================================================= */}
       <div style={{ 
         width: '380px', 
@@ -129,18 +136,18 @@ export default function AppShell() {
 
         <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
           
-          {/* STEP 1: GPX FILE UPLOAD */}
+          {/* CONTROL BLOCK 1: GPX FILE INPUT */}
           <div>
             <label style={{ display: 'block', fontWeight: 700, fontSize: '12px', color: '#64748B', marginBottom: '8px', textTransform: 'uppercase' }}>1. Track File Intake</label>
             <label style={{
-              display: 'block', padding: '12px', background: '#C9A84C', color: 'white', textAlign: 'center', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', transition: 'all 0.2s'
+              display: 'block', padding: '12px', background: '#C9A84C', color: 'white', textAlign: 'center', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px'
             }}>
               {routeCoords.length > 0 ? "🔄 RELOAD RUN GEOMETRY" : "📂 CHOOSE RUN (.GPX)"}
               <input type="file" accept=".gpx" onChange={handleFileUpload} style={{ display: 'none' }} />
             </label>
           </div>
 
-          {/* STEP 2: THE 5 LOCKED MASTER TEMPLATES */}
+          {/* CONTROL BLOCK 2: MASTER DESIGN THEMES */}
           <div>
             <label style={{ display: 'block', fontWeight: 700, fontSize: '12px', color: '#64748B', marginBottom: '8px', textTransform: 'uppercase' }}>2. Master Guidelines Profiles</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -149,8 +156,11 @@ export default function AppShell() {
                   key={style.id}
                   onClick={() => setActiveTemplate(style.id as keyof typeof TEMPLATE_STYLES)}
                   style={{
-                    padding: '10px 14px', borderRadius: '8px', border: activeTemplate === style.id ? '2px solid #C9A84C' : '1px solid #E2E8F0',
-                    background: activeTemplate === style.id ? '#FDFBF7' : '#FFFFFF', color: '#1E293B', textAlign: 'left', fontWeight: activeTemplate === style.id ? 700 : 500, fontSize: '13px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                    padding: '10px 14px', borderRadius: '8px', 
+                    border: activeTemplate === style.id ? '2px solid #C9A84C' : '1px solid #E2E8F0',
+                    background: activeTemplate === style.id ? '#FDFBF7' : '#FFFFFF', color: '#1E293B', 
+                    textAlign: 'left', fontWeight: activeTemplate === style.id ? 700 : 500, fontSize: '13px', 
+                    cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                   }}
                 >
                   {style.name}
@@ -160,11 +170,11 @@ export default function AppShell() {
             </div>
           </div>
 
-          {/* STEP 3: HIGH-PRECISION DESIGN SLIDERS */}
+          {/* CONTROL BLOCK 3: SLIDERS */}
           <div>
             <label style={{ display: 'block', fontWeight: 700, fontSize: '12px', color: '#64748B', marginBottom: '12px', textTransform: 'uppercase' }}>3. Vector Geometry Fine-Tuning</label>
             
-            {/* STROKE WIDTH SLIDER */}
+            {/* WEIGHT */}
             <div style={{ marginBottom: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
                 <span>Route Line Weight</span>
@@ -173,16 +183,16 @@ export default function AppShell() {
               <input type="range" min="1.5" max="8.0" step="0.1" value={strokeWidth} onChange={(e) => setStrokeWidth(parseFloat(e.target.value))} style={{ width: '100%', accentColor: '#C9A84C' }} />
             </div>
 
-            {/* MARGIN BOUNDARY SLIDER */}
+            {/* BUFFER PADDING */}
             <div style={{ marginBottom: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
-                <span>Layout Border Frame Padding</span>
+                <span>Layout Frame Padding</span>
                 <span>{mapPadding}px</span>
               </div>
               <input type="range" min="40" max="150" step="5" value={mapPadding} onChange={(e) => setMapPadding(parseInt(e.target.value))} style={{ width: '100%', accentColor: '#C9A84C' }} />
             </div>
 
-            {/* PATH OPACITY SLIDER */}
+            {/* INK OPACITY */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
                 <span>Path Ink Opacity</span>
@@ -192,7 +202,7 @@ export default function AppShell() {
             </div>
           </div>
 
-          {/* STEP 4: GRAPHIC LAYER TOGGLES */}
+          {/* CONTROL BLOCK 4: TOGGLES */}
           <div>
             <label style={{ display: 'block', fontWeight: 700, fontSize: '12px', color: '#64748B', marginBottom: '8px', textTransform: 'uppercase' }}>4. Overlays & Markers</label>
             <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
@@ -202,21 +212,178 @@ export default function AppShell() {
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: '#334155', cursor: 'pointer' }}>
                 <input type="checkbox" checked={showMedalZone} onChange={(e) => setShowMedalZone(e.target.checked)} style={{ accentColor: '#C9A84C', width: '16px', height: '16px' }} />
-                Reserve Physical Medal Safe-Zone
+                Reserve Medal Safe-Zone
               </label>
             </div>
           </div>
 
-          {/* STEP 5: CUSTOM LABELS TYPOGRAPHY OVERRIDE */}
+          {/* CONTROL BLOCK 5: TYPOGRAPHY LABELS OVERRIDES */}
           <div>
             <label style={{ display: 'block', fontWeight: 700, fontSize: '12px', color: '#64748B', marginBottom: '10px', textTransform: 'uppercase' }}>5. Typography Labels & Metadata</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-              <input type="text" placeholder="Runner Full Name" value={runnerName} onChange={(e) => setRunnerName(e.target.value.toUpperCase())} style={{ width: '100%', padding: '8px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '13px' }} />
-              <input type="text" placeholder="Race Event Title" value={raceName} onChange={(e) => setRaceName(e.target.value.toUpperCase())} style={{ width: '100%', padding: '8px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '13px' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              
+              <input 
+                type="text" 
+                placeholder="Runner Full Name" 
+                value={runnerName} 
+                onChange={(e) => setRunnerName(e.target.value.toUpperCase())} 
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }} 
+              />
+              
+              <input 
+                type="text" 
+                placeholder="Race Event Title" 
+                value={raceName} 
+                onChange={(e) => setRaceName(e.target.value.toUpperCase())} 
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }} 
+              />
               
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <input type="text" placeholder="Year" value={raceYear} onChange={(e) => setRaceYear(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '13px' }} />
-                <input type="text" placeholder="Bib Number" value={bibNumber} onChange={(e) => setBibNumber(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '13px' }} />
+                <input 
+                  type="text" 
+                  placeholder="Year" 
+                  value={raceYear} 
+                  onChange={(e) => setRaceYear(e.target.value)} 
+                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }} 
+                />
+                <input 
+                  type="text" 
+                  placeholder="Bib Number" 
+                  value={bibNumber} 
+                  onChange={(e) => setBibNumber(e.target.value)} 
+                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }} 
+                />
               </div>
               
-              <input type="text" placeholder="Official Timing" value={finishTime} onChange={(e) => setFinishTime(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '13px
+              <input 
+                type="text" 
+                placeholder="Official Timing" 
+                value={finishTime} 
+                onChange={(e) => setFinishTime(e.target.value)} 
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }} 
+              />
+              
+              <input 
+                type="text" 
+                placeholder="Custom Motivation Subtitle / Quote" 
+                value={customQuote} 
+                onChange={(e) => setCustomQuote(e.target.value)} 
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }} 
+              />
+              
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* =========================================================
+          THE CANVAS ARTBOARD DISPLAY MATRIX
+          ========================================================= */}
+      <div style={{ flex: 1, height: '100%', padding: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxSizing: 'border-box' }}>
+        
+        {/* ART POSTER SURFACE MOCK MOUNT */}
+        <div id="print-art-board" style={{ 
+          width: '100%', 
+          maxWidth: '550px', 
+          height: '100%',
+          maxHeight: '750px',
+          background: currentToken.bg, 
+          borderRadius: '16px', 
+          boxShadow: '0 30px 70px rgba(0,0,0,0.12)', 
+          border: `1px solid ${currentToken.borderColor}`,
+          display: 'flex', 
+          flexDirection: 'column',
+          position: 'relative',
+          padding: '24px',
+          boxSizing: 'border-box',
+          transition: 'background-color 0.4s'
+        }}>
+          
+          {/* PHYSICAL MEDAL безопасная зона DISPLAY OUTLINE */}
+          {showMedalZone && (
+            <div style={{
+              position: 'absolute', top: '30px', left: '30px', width: '90px', height: '90px', 
+              borderRadius: '50%', border: '2px dashed #C9A84C', display: 'flex', justifyContent: 'center', 
+              alignItems: 'center', background: 'rgba(201,168,76,0.05)', zIndex: 5, color: '#C9A84C', 
+              fontSize: '10px', fontWeight: 'bold', textAlign: 'center'
+            }}>
+              MEDAL OUTLINE
+            </div>
+          )}
+
+          {/* MAP CANVAS PANEL VECTOR RENDER LAYER */}
+          <div style={{ flex: 1, width: '100%', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
+            <Map
+              ref={mapRef}
+              mapStyle={currentToken.mapStyle}
+              style={{ width: '100%', height: '100%' }}
+              attributionControl={false}
+            >
+              <NavigationControl position="top-right" />
+              {routeCoords.length > 0 && (
+                <Source id="route-matrix" type="geojson" data={{
+                  type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: routeCoords }
+                }}>
+                  <Layer
+                    id="route-line-core"
+                    type="line"
+                    layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+                    paint={{
+                      'line-color': currentToken.lineColor,
+                      'line-width': strokeWidth,
+                      'line-opacity': lineOpacity
+                    }}
+                  />
+                </Source>
+              )}
+            </Map>
+          </div>
+
+          {/* GALLERY TEXT LABEL BLOCKS MAP COMPLIANT */}
+          <div style={{ 
+            marginTop: '20px', 
+            paddingTop: '16px', 
+            borderTop: `1px solid ${currentToken.borderColor}`, 
+            color: currentToken.textColor,
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px'
+          }}>
+            <div style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase' }}>
+              {raceName || "RUN TITLE PLACEHOLDER"}
+            </div>
+            
+            <div style={{ fontSize: '12px', fontWeight: 300, letterSpacing: '4px', textTransform: 'uppercase', color: activeTemplate === 'dark' ? '#A0AEC0' : '#4A5568', margin: '2px 0 6px 0' }}>
+              {customQuote}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', fontSize: '12px', fontWeight: 600, letterSpacing: '1px' }}>
+              <div>ATHLETE: <span style={{ fontWeight: 400 }}>{runnerName}</span></div>
+              <div>YEAR: <span style={{ fontWeight: 400 }}>{raceYear}</span></div>
+              <div>BIB: <span style={{ fontWeight: 400 }}>{bibNumber}</span></div>
+              <div>TIME: <span style={{ fontWeight: 400 }}>{finishTime}</span></div>
+            </div>
+          </div>
+
+          {/* PRINT ACTUATOR ACTIVATOR EXPORT */}
+          {routeCoords.length > 0 && (
+            <button 
+              onClick={() => window.print()}
+              style={{
+                position: 'absolute', bottom: '90px', right: '40px', padding: '10px 20px', 
+                background: '#1E293B', color: '#FFFFFF', border: 'none', borderRadius: '50px', 
+                cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', boxShadow: '0 10px 20px rgba(0,0,0,0.3)', zIndex: 99
+              }}
+            >
+              🖨️ EXPORT ASSET LAYER
+            </button>
+          )}
+
+        </div>
+      </div>
+
+    </div>
+  );
+}
