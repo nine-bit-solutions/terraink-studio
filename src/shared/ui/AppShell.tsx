@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Map, { Source, Layer, NavigationControl } from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import Map, { Source, Layer, NavigationControl } from 'react-map-gl/maplibre';
+import type { MapRef } from 'react-map-gl/maplibre';
+import { parseGPX } from '@/utils/gpxParser';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-// 5 Branded Style Configurations (Style Tokens Mapped Directly)
+// 5 Locked Master Guidelines Token Profiles
 const TEMPLATE_STYLES = {
   white: {
     id: 'white',
-    name: 'Minimal White',
+    name: 'Minimal White Layout',
     mapStyle: 'https://tiles.openfreemap.org/styles/positron',
     bg: '#FAFAF8',
     lineColor: '#1A1A1A',
@@ -19,9 +20,9 @@ const TEMPLATE_STYLES = {
   },
   dark: {
     id: 'dark',
-    name: 'Dark Luxe',
+    name: 'Dark Luxe Premium',
     mapStyle: 'https://tiles.openfreemap.org/styles/dark-matter',
-    bg: '#0D0D0D',
+    bg: '#0A0A0A',
     lineColor: '#C9A84C', // Kudos Gold
     textColor: '#FFFFFF',
     borderColor: '#222222',
@@ -31,23 +32,23 @@ const TEMPLATE_STYLES = {
   },
   topo: {
     id: 'topo',
-    name: 'Topo Contour',
+    name: 'Topo Contour Corridor',
     mapStyle: 'https://tiles.openfreemap.org/styles/liberty',
-    bg: '#F5EFEB',
+    bg: '#F4EFEB',
     lineColor: '#1E3A8A',
     textColor: '#1E3A8A',
-    borderColor: '#DCD3CB',
+    borderColor: '#DBD2C9',
     elevationFill: 'rgba(30, 58, 138, 0.10)',
     hasElevation: true,
     layoutMode: 'standard'
   },
   medal: {
     id: 'medal',
-    name: 'Medal + Map (Physical Frame Mount)',
+    name: 'Physical Medal Mount (Die-Cut)',
     mapStyle: 'https://tiles.openfreemap.org/styles/positron',
     bg: '#FFFFFF',
     lineColor: '#C9A84C',
-    textColor: '#1A1A1A',
+    textColor: '#111111',
     borderColor: '#E2E8F0',
     elevationFill: 'transparent',
     hasElevation: false,
@@ -55,12 +56,12 @@ const TEMPLATE_STYLES = {
   },
   photo: {
     id: 'photo',
-    name: 'Photo + Map Split Layout',
+    name: 'Photo + Map Side-by-Side',
     mapStyle: 'https://tiles.openfreemap.org/styles/dark-matter',
-    bg: '#111111',
+    bg: '#141414',
     lineColor: '#FFFFFF',
     textColor: '#FFFFFF',
-    borderColor: '#222222',
+    borderColor: '#262626',
     elevationFill: 'transparent',
     hasElevation: false,
     layoutMode: 'split-photo'
@@ -68,22 +69,22 @@ const TEMPLATE_STYLES = {
 };
 
 export default function AppShell() {
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<MapRef>(null);
   
-  // File State Channels
+  // Data Stream Ingestion Core States
   const [routeCoords, setRouteCoords] = useState<[number, number][]>([]);
   const [elevationPath, setElevationPath] = useState<string>('');
   const [computedDistance, setComputedDistance] = useState<string>('0.00');
   const [computedClimb, setComputedClimb] = useState<string>('0');
 
-  // Sliders & Style Configs
+  // Configuration Sliders & Themes States
   const [activeTemplate, setActiveTemplate] = useState<keyof typeof TEMPLATE_STYLES>('dark');
   const [strokeWidth, setStrokeWidth] = useState<number>(3.5);
-  const [mapPadding, setMapPadding] = useState<number>(75);
+  const [mapPadding, setMapPadding] = useState<number>(65);
   const [lineOpacity, setLineOpacity] = useState<number>(1);
   const [photoPreview, setPhotoPreview] = useState<string>('');
 
-  // Typographic Values
+  // Typographic Metadata Labels Overlays
   const [runnerName, setRunnerName] = useState<string>('ATHLETE NAME');
   const [raceName, setRaceName] = useState<string>('COMRADES MARATHON');
   const [raceYear, setRaceYear] = useState<string>('2026');
@@ -91,8 +92,8 @@ export default function AppShell() {
   const [bibNumber, setBibNumber] = useState<string>('31422');
   const [customQuote, setCustomQuote] = useState<string>('Local is Lekker.');
 
-  // Camera reset matrix bounds effect
-  useEffect(() => {
+  // Camera reset animation matrix handler
+  const fitMapToRoute = () => {
     if (routeCoords.length > 0 && mapRef.current) {
       const lons = routeCoords.map(c => c[0]);
       const lats = routeCoords.map(c => c[1]);
@@ -101,9 +102,22 @@ export default function AppShell() {
         { padding: mapPadding, duration: 1000 }
       );
     }
-  }, [mapPadding, routeCoords, activeTemplate]);
+  };
 
-  // Parser
+  // Trigger viewport centering whenever track geometry data or margins update
+  useEffect(() => {
+    fitMapToRoute();
+  }, [mapPadding, routeCoords]);
+
+  // Refit camera context automatically after style swaps finish loading tiles
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fitMapToRoute();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [activeTemplate]);
+
+  // High-Performance Browser-Native XML Ingestion Data Stream Processor
   const processTrackFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -159,7 +173,7 @@ export default function AppShell() {
 
         if (rawElevations.length > 0) {
           const svgWidth = 440;
-          const svgHeight = 50;
+          const svgHeight = 45;
           const minEle = Math.min(...rawElevations);
           const maxEle = Math.max(...rawElevations);
           const eleRange = maxEle - minEle || 1;
@@ -186,30 +200,30 @@ export default function AppShell() {
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh', background: '#ECEFEF', overflow: 'hidden' }}>
       
-      {/* ==========================================
-          CONTROL PANEL SIDEBAR CONTAINER
-          ========================================== */}
-      <div style={{ width: '380px', height: '100%', background: '#FFFFFF', borderRight: '1px solid #DFE3E3', display: 'flex', flexDirection: 'column', overflowY: 'auto', zIndex: 20 }}>
-        <div style={{ padding: '24px', background: '#0F172A', color: '#FFFFFF' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, letterSpacing: '-0.3px' }}>KUDOS ENGINE v1.4</h2>
-          <p style={{ fontSize: '11px', color: '#94A3B8', margin: '2px 0 0 0', textTransform: 'uppercase' }}>Milestone Studio Controller</p>
+      {/* =========================================================
+          CONTROL MATRIX PANEL SIDEBAR SECTION
+          ========================================================= */}
+      <div style={{ width: '370px', height: '100%', background: '#FFFFFF', borderRight: '1px solid #DFE3E3', display: 'flex', flexDirection: 'column', overflowY: 'auto', zIndex: 20 }}>
+        <div style={{ padding: '20px', background: '#0F172A', color: '#FFFFFF' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, letterSpacing: '-0.3px' }}>KUDOS STUDIO v1.4</h2>
+          <p style={{ fontSize: '11px', color: '#94A3B8', margin: '2px 0 0 0', textTransform: 'uppercase' }}>Milestone Trophy Asset Factory</p>
         </div>
 
-        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
           
-          {/* GPX LOADER */}
+          {/* CONTROL BLOCK 1: GPX FILE Uploader */}
           <div>
-            <label style={{ display: 'block', fontWeight: 700, fontSize: '11px', color: '#64748B', marginBottom: '8px' }}>1. INGEST DATA ROUTE</label>
-            <label style={{ display: 'block', padding: '12px', background: '#C9A84C', color: 'white', textAlign: 'center', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }}>
-              {routeCoords.length > 0 ? "🔄 RELOAD GPX DATA" : "📂 SELECT UPLOAD FILE (.GPX)"}
+            <label style={{ display: 'block', fontWeight: 700, fontSize: '11px', color: '#64748B', marginBottom: '8px' }}>1. INGEST DATA ROUTE SOURCE</label>
+            <label style={{ display: 'block', padding: '11px', background: '#C9A84C', color: 'white', textAlign: 'center', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }}>
+              {routeCoords.length > 0 ? "🔄 RELOAD GPS TRACK" : "📂 CHOOSE RUN (.GPX)"}
               <input type="file" accept=".gpx" onChange={processTrackFile} style={{ display: 'none' }} />
             </label>
           </div>
 
-          {/* DYNAMIC IMAGE UPLOADER */}
+          {/* DYNAMIC ATTACHMENT BOX FOR SPLIT GRAPHIC PROFILE */}
           {activeToken.layoutMode === 'split-photo' && (
             <div style={{ padding: '12px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-              <label style={{ display: 'block', fontWeight: 700, fontSize: '11px', color: '#0F172A', marginBottom: '6px' }}>🖼️ POSTER ATTACHED PHOTO LAYER</label>
+              <label style={{ display: 'block', fontWeight: 700, fontSize: '11px', color: '#0F172A', marginBottom: '6px' }}>🖼️ UPLOAD ATHLETE PROFILE IMAGE</label>
               <input type="file" accept="image/*" onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) setPhotoPreview(URL.createObjectURL(f));
@@ -217,9 +231,9 @@ export default function AppShell() {
             </div>
           )}
 
-          {/* CHOOSE MASTER PROFILE */}
+          {/* CONTROL BLOCK 2: VARIATIONS PRESETS */}
           <div>
-            <label style={{ display: 'block', fontWeight: 700, fontSize: '11px', color: '#64748B', marginBottom: '8px' }}>2. CHOOSE DESIGN PROFILE GUIDELINE</label>
+            <label style={{ display: 'block', fontWeight: 700, fontSize: '11px', color: '#64748B', marginBottom: '6px' }}>2. CHOOSE DESIGN TEMPLATE PROFILE</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
               {Object.values(TEMPLATE_STYLES).map((token) => (
                 <button key={token.id} onClick={() => setActiveTemplate(token.id as any)} style={{
@@ -234,11 +248,11 @@ export default function AppShell() {
             </div>
           </div>
 
-          {/* CONFIGURATION KNOBS */}
+          {/* CONTROL BLOCK 3: GEOMETRIC TUNERS */}
           <div>
-            <label style={{ display: 'block', fontWeight: 700, fontSize: '11px', color: '#64748B', marginBottom: '12px' }}>3. GEOMETRIC TUNERS SLIDERS</label>
-            <div style={{ marginBottom: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#475569', marginBottom: '4px' }}><span>Line Weight Thickness</span><span>{strokeWidth}px</span></div>
+            <label style={{ display: 'block', fontWeight: 700, fontSize: '11px', color: '#64748B', marginBottom: '12px' }}>3. GEOMETRY CONFIGURATION SLIDERS</label>
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#475569', marginBottom: '4px' }}><span>Line Stroke Weight</span><span>{strokeWidth}px</span></div>
               <input type="range" min="1.0" max="7.0" step="0.2" value={strokeWidth} onChange={(e) => setStrokeWidth(parseFloat(e.target.value))} style={{ width: '100%', accentColor: '#C9A84C' }} />
             </div>
             <div>
@@ -247,81 +261,80 @@ export default function AppShell() {
             </div>
           </div>
 
-          {/* INSCRIPTIONS LABEL REGIONS */}
+          {/* CONTROL BLOCK 4: TEXT REPLICATORS */}
           <div>
-            <label style={{ display: 'block', fontWeight: 700, fontSize: '11px', color: '#64748B', marginBottom: '10px' }}>4. TYPOGRAPHY TEXT OVERLAYS MANAGEMENT</label>
+            <label style={{ display: 'block', fontWeight: 700, fontSize: '11px', color: '#64748B', marginBottom: '10px' }}>4. TYPOGRAPHY LABELS MANAGEMENT</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <input type="text" placeholder="Athlete Name" value={runnerName} onChange={(e) => setRunnerName(e.target.value.toUpperCase())} style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} />
-              <input type="text" placeholder="Race Event Title" value={raceName} onChange={(e) => setRaceName(e.target.value.toUpperCase())} style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} />
+              <input type="text" placeholder="Athlete Identifier" value={runnerName} onChange={(e) => setRunnerName(e.target.value.toUpperCase())} style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} />
+              <input type="text" placeholder="Branded Race Event Name" value={raceName} onChange={(e) => setRaceName(e.target.value.toUpperCase())} style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <input type="text" placeholder="Year" value={raceYear} onChange={(e) => setRaceYear(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} />
-                <input type="text" placeholder="Bib Number" value={bibNumber} onChange={(e) => setBibNumber(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} />
+                <input type="text" placeholder="Athlete Bib" value={bibNumber} onChange={(e) => setBibNumber(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} />
               </div>
-              <input type="text" placeholder="Official Timing Finish" value={finishTime} onChange={(e) => setFinishTime(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} />
-              <input type="text" placeholder="Motivation Quote Subtitle" value={customQuote} onChange={(e) => setCustomQuote(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} />
+              <input type="text" placeholder="Official Logged Timing" value={finishTime} onChange={(e) => setFinishTime(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} />
+              <input type="text" placeholder="Custom Motivation Subtitle" value={customQuote} onChange={(e) => setCustomQuote(e.target.value)} style={{ width: '100%', padding: '8px 10px', border: '1px solid #CBD5E1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} />
             </div>
           </div>
 
         </div>
       </div>
 
-      {/* ==========================================
-          THE RESPONSIVE CANVAS ARTBOARD PANEL
-          ========================================== */}
+      {/* =========================================================
+          RIGHT COLUMN: THE RESPONSIVE CANVAS DESIGN MOUNT
+          ========================================================= */}
       <div style={{ flex: 1, padding: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxSizing: 'border-box' }}>
         
-        {/* FRAMED SHEET MOUNT WRAPPER Card surface */}
+        {/* THE FRAMED GALLERY CARD MATTE SURFACE */}
         <div id="print-art-board" style={{
-          width: '100%', maxWidth: '540px', height: '100%', maxHeight: '770px',
+          width: '100%', maxWidth: '540px', height: '100%', maxHeight: '760px',
           background: activeToken.bg, border: `1px solid ${activeToken.borderColor}`,
           borderRadius: '16px', padding: '24px', boxShadow: '0 25px 65px rgba(0,0,0,0.12)',
           display: 'flex', flexDirection: 'column', position: 'relative', boxSizing: 'border-box',
-          transition: 'all 0.3s ease'
+          transition: 'background-color 0.4s ease, border-color 0.4s ease'
         }}>
           
-          {/* CONDITION 1: DIE-CUT MEDAL CAVITY Zone RING */}
+          {/* VISUAL LAYOUT ENGINE OPTION 1: MEDAL FRAME Safe Cutout opening */}
           {activeToken.layoutMode === 'medal' && (
             <div style={{
-              position: 'absolute', top: '40px', left: '50%', transform: 'translateX(-50%)',
-              width: '110px', height: '110px', borderRadius: '50%', 
+              position: 'absolute', top: '35px', left: '50%', transform: 'translateX(-50%)',
+              width: '105px', height: '105px', borderRadius: '50%', 
               border: `2px dashed ${activeToken.lineColor}`,
-              background: 'rgba(201,168,76,0.05)', display: 'flex', justifyContent: 'center',
+              background: 'rgba(201,168,76,0.04)', display: 'flex', justifyContent: 'center',
               alignItems: 'center', color: activeToken.lineColor, fontSize: '9px', fontWeight: 800, zIndex: 40
             }}>
-              MEDAL DIE-CUT FRAME
+              MEDAL MOUNT PLACEHOLDER
             </div>
           )}
 
-          {/* MAIN INTERNAL ROW / COLUMN ADAPTIVE GRID HOUSING MAP */}
+          {/* VISUAL LAYOUT ENGINE OPTION 2: RESPONSIVE CONTENT GRID WRAPPER */}
           <div style={{ 
             flex: 1, width: '100%', display: 'flex', 
             flexDirection: activeToken.layoutMode === 'split-photo' ? 'row' : 'column',
             gap: '16px', overflow: 'hidden', position: 'relative',
-            marginTop: activeToken.layoutMode === 'medal' ? '120px' : '0px' // Offset map down to clear the medal zone safely
+            marginTop: activeToken.layoutMode === 'medal' ? '120px' : '0px' // Shift container down to clear the medal opening accurately
           }}>
             
-            {/* CONDITION 2: PHOTO Split VIEW LAYER PANEL */}
+            {/* PERSONALIZED USER GRAPHIC HOUSING COLUMN */}
             {activeToken.layoutMode === 'split-photo' && (
               <div style={{ 
-                flex: 1, background: '#1A1A1A', borderRadius: '10px', border: '1px solid #2A2A2A',
-                overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' 
+                flex: 1, height: '100%', background: '#1A1A1A', borderRadius: '10px', 
+                border: '1px solid #282828', overflow: 'hidden', display: 'flex', 
+                justifyContent: 'center', alignItems: 'center', boxSizing: 'border-box'
               }}>
                 {photoPreview ? (
-                  <img src={photoPreview} alt="Athlete Canvas Element" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={photoPreview} alt="Athlete layer representation" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <div style={{ color: '#444', fontSize: '11px', textAlign: 'center', padding: '16px', fontWeight: 600 }}>
-                    [RUNNER CANVAS HOUSING]
+                  <div style={{ color: '#444', fontSize: '11px', fontWeight: 700, letterSpacing: '0.5px', textCenter: 'center', padding: '12px' }}>
+                    [IMAGE CANVAS ROW]
                   </div>
                 )}
               </div>
             )}
 
-            {/* MAP VECTOR CANVAS CONTEXT EMBED PANEL */}
-            <div style={{ flex: 1.4, borderRadius: '10px', overflow: 'hidden', position: 'relative', minHeight: '300px' }}>
+            {/* DYNAMIC MAP ENGINE WRAPPER BOX */}
+            <div style={{ flex: 1.4, height: '100%', borderRadius: '10px', overflow: 'hidden', position: 'relative', minHeight: '280px' }}>
               <Map 
-                key={activeTemplate} // Crucial trick: Obliterates pre-cached layer structures instantly on tile flag click
                 ref={mapRef} 
-                mapLib={maplibregl} 
                 mapStyle={activeToken.mapStyle} 
                 style={{ width: '100%', height: '100%' }} 
                 attributionControl={false}
@@ -340,33 +353,33 @@ export default function AppShell() {
             </div>
           </div>
 
-          {/* DYNAMIC ALTITUDE PROFILE CURVES LAYER */}
+          {/* DYNAMIC ALTITUDE PROFILE SECTION */}
           {activeToken.hasElevation && elevationPath && (
             <div style={{ height: '70px', width: '100%', marginTop: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8px', fontWeight: 700, color: activeToken.lineColor, opacity: 0.6, letterSpacing: '1px', textTransform: 'uppercase' }}>
-                <span>Altitude Gradient Chart Contour</span>
-                <span>{computedClimb}m Climbing</span>
+                <span>Altitude Gradient Profile Contour</span>
+                <span>{computedClimb}m Vertical Gain</span>
               </div>
-              <svg style={{ width: '100%', height: '48px', overflow: 'visible' }} viewBox="0 0 480 50" preserveAspectRatio="none">
+              <svg style={{ width: '100%', height: '48px', overflow: 'visible' }} viewBox="0 0 440 45" preserveAspectRatio="none">
                 <path d={elevationPath} fill={activeToken.elevationFill} stroke={activeToken.lineColor} strokeWidth="1.3" strokeLinejoin="round" />
-                <line x1="0" y1="50" x2="480" y2="50" stroke={activeToken.lineColor} strokeWidth="1" opacity="0.15" />
+                <line x1="0" y1="45" x2="440" y2="45" stroke={activeToken.lineColor} strokeWidth="1" opacity="0.15" />
               </svg>
             </div>
           )}
 
-          {/* POSTER FOOTER LABELS COMPLIANT DESIGNS */}
+          {/* ARTWORK BASELINE LABEL FOOTER OVERLAYS */}
           <div style={{ 
             marginTop: '16px', paddingTop: '12px', borderTop: `1px solid ${activeToken.borderColor}`, 
             color: activeToken.textColor, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '4px' 
           }}>
             <div style={{ fontSize: '18px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase' }}>
-              {raceName || "COURSE LABELS MATRIX"}
+              {raceName || "COURSE INCRIPTION INSIGNIA"}
             </div>
             <div style={{ fontSize: '11px', fontWeight: 300, letterSpacing: '3px', textTransform: 'uppercase', opacity: 0.7, marginBottom: '4px' }}>
               {customQuote}
             </div>
             
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', fontSize: '10px', fontWeight: 600, letterSpacing: '0.5px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '18px', fontSize: '10px', fontWeight: 600, letterSpacing: '0.5px' }}>
               <div>DISTANCE: <span style={{ fontWeight: 400 }}>{computedDistance} KM</span></div>
               <div>ATHLETE: <span style={{ fontWeight: 400 }}>{runnerName}</span></div>
               <div>YEAR: <span style={{ fontWeight: 400 }}>{raceYear}</span></div>
@@ -375,13 +388,13 @@ export default function AppShell() {
             </div>
           </div>
 
-          {/* FLOATING ACTION EXPORT PREVIEW LAYER */}
+          {/* QUICK-PRINT EMITTER CONTROL BUTTON */}
           {routeCoords.length > 0 && (
             <button onClick={() => window.print()} style={{
               position: 'absolute', bottom: '130px', right: '40px', padding: '8px 16px', 
-              background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer', boxShadow: '0 8px 16px rgba(0,0,0,0.2)', zIndex: 99
+              background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '30px', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer', boxShadow: '0 8px 16px rgba(0,0,0,0.2)'
             }}>
-              🖨️ EXPORT ASSET LAYER
+              🖨️ EXPORT DESIGN INGREDENTS
             </button>
           )}
 
