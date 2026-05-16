@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
-// We changed these imports to be more specific to stop the Vercel error
-import { Map, Source, Layer, NavigationControl, MapRef } from 'react-map-gl';
-import maplibregl from 'maplibre-gl'; 
+import Map, { Source, Layer, NavigationControl } from 'react-map-gl/maplibre';
+import type { MapRef } from 'react-map-gl/maplibre';
 import { parseGPX } from '@/utils/gpxParser';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -62,12 +61,12 @@ export default function AppShell() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <button 
                 onClick={() => setStyle('light')}
-                style={{ padding: '10px', borderRadius: '6px', border: activeStyle === 'light' ? '2px solid #C9A84C' : '1fr solid #ddd', background: 'white', cursor: 'pointer' }}>
+                style={{ padding: '10px', borderRadius: '6px', border: activeStyle === 'light' ? '2px solid #C9A84C' : '1px solid #ddd', background: 'white', cursor: 'pointer' }}>
                 Minimal White
               </button>
               <button 
                 onClick={() => setStyle('dark')}
-                style={{ padding: '10px', borderRadius: '6px', border: activeStyle === 'dark' ? '2px solid #C9A84C' : '1fr solid #ddd', background: '#1a1a1a', color: 'white', cursor: 'pointer' }}>
+                style={{ padding: '10px', borderRadius: '6px', border: activeStyle === 'dark' ? '2px solid #C9A84C' : '1px solid #ddd', background: '#1a1a1a', color: 'white', cursor: 'pointer' }}>
                 Dark Luxe
               </button>
             </div>
@@ -80,7 +79,6 @@ export default function AppShell() {
         <div style={{ width: '100%', height: '100%', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}>
           <Map
             ref={mapRef}
-            mapLib={maplibregl} // THIS IS THE FIX: Explicitly telling the map to use MapLibre
             mapStyle={MAP_STYLES[activeStyle]}
             style={{ width: '100%', height: '100%' }}
           >
